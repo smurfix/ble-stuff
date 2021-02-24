@@ -23,13 +23,14 @@ def detection_callback(scanner, tg, device, advertisement_data):
         tg.spawn(dev_main,device.address,scanner._adapter)
 
 async def main():
-    scanner = BleakScanner(adapter="hci1")
-
-    async with anyio.create_task_group() as tg, scanner:
+    scanner = BleakScanner(adapter="hci0")
+    async with anyio.create_task_group() as tg:
         scanner.register_detection_callback(partial(detection_callback,scanner,tg))
-        #await anyio.sleep(2)
-        #print(await scanner.get_discovered_devices())
-        await anyio.sleep(99999)
+
+        async with scanner:
+            #await anyio.sleep(2)
+            #print(await scanner.get_discovered_devices())
+            await anyio.sleep(99999)
 
 anyio.run(main, backend="trio")
 
