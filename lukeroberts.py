@@ -10,18 +10,20 @@ from functools import partial
 import logging
 logging.basicConfig(level=logging.DEBUG)
 
-async def dev_main(addr,adap):
+async def dev_main(addr,adap,sc):
     async with BleakClient(addr, adapter=adap):
         svcs = await client.get_services()
         print("Services:")
         for service in svcs:
             print(service)
+        sc.cancel()
 
 def detection_callback(scanner, tg, device, advertisement_data):
     print(device.address, "RSSI:", device.rssi, advertisement_data)
     for u in device.details.get('UUIDs',[]):
         if u.upper() == "44092840-0567-11E6-B862-0002A5D5C51B":
-            tg.spawn(dev_main,device.address,scanner._adapter)
+            tg.spawn(dev_main,device,scanner._adapter,tg.cancel_scope)
+            break
 
 async def main():
     scanner = BleakScanner(adapter="hci0")
